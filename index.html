@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OP: RONIN // TACTICAL HUD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        crimson: {
+                            500: '#dc2626',
+                            600: '#b91c1c',
+                            900: '#7f1d1d',
+                        },
+                        steel: '#9ca3af',
+                        obsidian: '#0a0a0a',
+                        carbon: '#171717'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #050505;
+            color: #d4d4d8;
+            background-image: 
+                linear-gradient(rgba(20, 20, 20, 0.8) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(20, 20, 20, 0.8) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .ronin-card {
+            background-color: rgba(10, 10, 10, 0.85);
+            border: 1px solid #27272a;
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .ronin-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 2px;
+            background: linear-gradient(90deg, #dc2626 0%, transparent 100%);
+            opacity: 0.5;
+        }
+
+        .ronin-btn {
+            background-color: transparent;
+            border: 1px solid #3f3f46;
+            color: #9ca3af;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ronin-btn:hover {
+            border-color: #dc2626;
+            color: #ffffff;
+        }
+
+        .ronin-btn.active {
+            background-color: rgba(220, 38, 38, 0.1);
+            border-color: #dc2626;
+            color: #ffffff;
+            box-shadow: inset 2px 0px 0px 0px #dc2626;
+        }
+
+        .data-input {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid #3f3f46;
+            color: #ffffff;
+            font-family: 'JetBrains Mono', monospace;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+        
+        .data-input:focus {
+            outline: none;
+            border-color: #dc2626;
+        }
+
+        .rpe-badge {
+            background: rgba(220, 38, 38, 0.15);
+            border: 1px solid rgba(220, 38, 38, 0.3);
+            color: #fca5a5;
+        }
+
+        /* Floating Tabs */
+        .side-tabs {
+            position: fixed;
+            right: 0;
+            top: 40%;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 50;
+        }
+
+        .side-tab {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            background-color: #0a0a0a;
+            color: #9ca3af;
+            padding: 16px 8px;
+            border: 1px solid #27272a;
+            border-right: none;
+            border-radius: 4px 0 0 4px;
+            font-size: 0.75rem;
+            letter-spacing: 0.15em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .side-tab:hover, .side-tab.active {
+            background-color: #171717;
+            color: #dc2626;
+            border-color: #dc2626;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.open {
+            display: flex;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+    <!-- SIDE TABS -->
+    <div class="side-tabs">
+        <button class="side-tab" onclick="openModal('modal-warmup')"><i class="fas fa-fire mb-2"></i> R.A.M.P.</button>
+        <button class="side-tab" onclick="openModal('modal-recovery')"><i class="fas fa-wind mb-2"></i> VAGAL</button>
+    </div>
+
+    <!-- MODALS -->
+    <div id="modal-warmup" class="modal">
+        <div class="ronin-card p-8 max-w-2xl w-full m-4">
+            <button onclick="closeModals()" class="absolute top-4 right-4 text-steel hover:text-crimson-500"><i class="fas fa-times text-xl"></i></button>
+            <h2 class="text-2xl font-black uppercase text-white mb-2 tracking-widest border-b border-zinc-800 pb-2"><span class="text-crimson-500">Soviet R.A.M.P.</span> Protocol</h2>
+            <p class="text-xs text-steel font-mono mb-6">Objective: Prime CNS & Lubricate Joints without Glycolysis.</p>
+            <div class="space-y-4 font-mono text-sm">
+                <div class="border-l-2 border-zinc-700 pl-4">
+                    <span class="text-white font-bold">1. Raise & Activate (5m):</span>
+                    <p class="text-zinc-400 mt-1">Light shadow boxing or skipping. Move to Starrett Torque Farming (Deep squat, screw feet externally into floor to set hip capsule).</p>
+                </div>
+                <div class="border-l-2 border-zinc-700 pl-4">
+                    <span class="text-white font-bold">2. Mobilize (5m):</span>
+                    <p class="text-zinc-400 mt-1">Contralateral Arm-Bars (Left arm presses, right big toe drives into floor). Lubricate C-T junction with thoracic prying.</p>
+                </div>
+                <div class="border-l-2 border-crimson-500 pl-4">
+                    <span class="text-white font-bold">3. Potentiate:</span>
+                    <p class="text-zinc-400 mt-1">Execute 1 crisp rep at 85% of working weight. Calibrate the nervous system to the load. Rest 2 mins before Set 1.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-recovery" class="modal">
+        <div class="ronin-card p-8 max-w-2xl w-full m-4">
+            <button onclick="closeModals()" class="absolute top-4 right-4 text-steel hover:text-crimson-500"><i class="fas fa-times text-xl"></i></button>
+            <h2 class="text-2xl font-black uppercase text-white mb-2 tracking-widest border-b border-zinc-800 pb-2"><span class="text-crimson-500">Vagal Reset</span> & Triage</h2>
+            <p class="text-xs text-steel font-mono mb-6">Objective: Clear COMT (Met/Met) Adrenaline & Protect COL5A1 Tendons.</p>
+            <div class="space-y-4 font-mono text-sm">
+                <div class="bg-carbon p-4 rounded border border-zinc-800">
+                    <span class="text-crimson-500 font-bold block mb-1">IMMEDIATE POST-WORKOUT</span>
+                    <p class="text-zinc-300">Assume 90/90 position on floor. <br>• Inhale: 4s (Nasal)<br>• Hold: 16s<br>• Exhale: 8s (Pursed lips)<br>Execute for 5 straight minutes. Do not skip.</p>
+                </div>
+                <div class="bg-carbon p-4 rounded border border-zinc-800">
+                    <span class="text-crimson-500 font-bold block mb-1">TISSUE TRIAGE</span>
+                    <p class="text-zinc-300">Daily Toe Yoga (Override 1st MTP amnesia). Voodoo floss forearms to clear lateral epicondyle flexor dominance from BJJ gripping.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="max-w-7xl mx-auto mb-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="ronin-card p-6 lg:col-span-2">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h1 class="text-4xl md:text-5xl font-black uppercase tracking-tighter text-white">
+                        <span class="text-crimson-500 font-light">OP:</span>RONIN
+                    </h1>
+                    <p class="font-mono text-xs text-steel mt-1 tracking-widest">TACTICAL BIOMECHANICS & ALACTIC POWER</p>
+                </div>
+                <span class="border border-zinc-700 text-zinc-400 font-mono text-xs px-2 py-1 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-crimson-500 animate-pulse"></span> SYSTEM ACTIVE
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-4 font-mono text-xs mt-8 border-t border-zinc-800 pt-4">
+                <div><span class="text-zinc-500 block mb-1">GENOTYPE</span><span class="text-white">ACTN3(RR) / COL5A1</span></div>
+                <div><span class="text-zinc-500 block mb-1">NEUROLOGY</span><span class="text-crimson-500 font-bold">TYPE 3 (SLOW COMT)</span></div>
+                <div><span class="text-zinc-500 block mb-1">FOCUS</span><span class="text-white">POWER + JOINT ARMOR</span></div>
+            </div>
+        </div>
+
+        <!-- READINESS ENGINE -->
+        <div class="ronin-card p-6 flex flex-col justify-between">
+            <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4 flex justify-between">
+                <span>Telemetry / Readiness</span>
+                <i class="fas fa-fingerprint"></i>
+            </h3>
+            
+            <div class="space-y-3 mb-4">
+                <div class="flex justify-between items-center">
+                    <span class="font-mono text-xs text-steel">CO2 Tolerance (s)</span>
+                    <input type="number" id="in-co2" class="data-input w-12" value="65" onchange="calculateReadiness()">
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="font-mono text-xs text-steel">Grip Dyno (kg)</span>
+                    <input type="number" id="in-grip" class="data-input w-12" value="64" onchange="calculateReadiness()">
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="font-mono text-xs text-steel">Resting HR (bpm)</span>
+                    <input type="number" id="in-rhr" class="data-input w-12" value="48" onchange="calculateReadiness()">
+                </div>
+            </div>
+
+            <div class="border-t border-zinc-800 pt-4">
+                <div class="flex justify-between items-end mb-2">
+                    <span class="font-mono text-xs text-zinc-500">SYSTEM READINESS</span>
+                    <span id="readiness-score" class="text-2xl font-black text-crimson-500">100%</span>
+                </div>
+                <div class="w-full bg-zinc-900 h-1.5 rounded-full overflow-hidden mb-2">
+                    <div id="readiness-bar" class="h-full bg-crimson-500 transition-all duration-500" style="width: 100%"></div>
+                </div>
+                <p id="readiness-text" class="font-mono text-[10px] text-zinc-400">OPTIMAL: Execute protocol as written.</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- PHASE SELECTOR -->
+    <div class="max-w-7xl mx-auto mb-6 flex flex-wrap md:flex-nowrap gap-2">
+        <button onclick="setPhase(1)" id="btn-p1" class="ronin-btn active flex-1 py-3 px-4 text-xs font-bold">
+            Phase 1: Armor & Iso
+        </button>
+        <button onclick="setPhase(2)" id="btn-p2" class="ronin-btn flex-1 py-3 px-4 text-xs font-bold">
+            Phase 2: Absolute Force
+        </button>
+        <button onclick="setPhase(3)" id="btn-p3" class="ronin-btn flex-1 py-3 px-4 text-xs font-bold">
+            Phase 3: Alactic Sustain
+        </button>
+    </div>
+
+    <!-- MAIN GRID -->
+    <main class="max-w-7xl mx-auto">
+        <div class="ronin-card p-6">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 id="current-phase-label" class="font-black text-xl text-white tracking-widest uppercase">PHASE 1</h2>
+                    <span id="phase-duration" class="font-mono text-xs text-crimson-500">WEEKS 1-4</span>
+                </div>
+                <div class="hidden md:block text-right max-w-sm">
+                    <p id="focus-text" class="font-mono text-xs text-zinc-400 leading-relaxed"></p>
+                </div>
+            </div>
+            
+            <div class="space-y-3" id="tactical-grid">
+                <!-- JS Injects Here -->
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Modal Logic
+        function openModal(id) { document.getElementById(id).classList.add('open'); }
+        function closeModals() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('open')); }
+        window.onclick = function(event) { if (event.target.classList.contains('modal')) closeModals(); }
+
+        // Readiness Engine
+        function calculateReadiness() {
+            const co2 = parseFloat(document.getElementById('in-co2').value) || 0;
+            const grip = parseFloat(document.getElementById('in-grip').value) || 0;
+            const rhr = parseFloat(document.getElementById('in-rhr').value) || 0;
+
+            const baseCO2 = 65;
+            const baseGrip = 64;
+            const baseRHR = 48;
+
+            let co2Score = (co2 / baseCO2) * 100;
+            let gripScore = (grip / baseGrip) * 100;
+            // Lower RHR is better. Inverse ratio.
+            let rhrScore = rhr > 0 ? (baseRHR / rhr) * 100 : 0; 
+
+            // Cap individual scores at 100% for the readiness calculation so you don't get 110% readiness
+            co2Score = Math.min(co2Score, 100);
+            gripScore = Math.min(gripScore, 100);
+            rhrScore = Math.min(rhrScore, 100);
+
+            let readiness = Math.round((co2Score + gripScore + rhrScore) / 3);
+            
+            // Failsafe bounds
+            if(readiness < 0) readiness = 0;
+            if(readiness > 100) readiness = 100;
+
+            const display = document.getElementById('readiness-score');
+            const bar = document.getElementById('readiness-bar');
+            const text = document.getElementById('readiness-text');
+
+            display.innerText = readiness + '%';
+            bar.style.width = readiness + '%';
+
+            if(readiness >= 90) {
+                bar.className = 'h-full bg-crimson-500 transition-all duration-500';
+                display.className = 'text-2xl font-black text-crimson-500';
+                text.innerText = 'OPTIMAL: Execute protocol. Maintain RPE targets.';
+            } else if (readiness >= 75) {
+                bar.className = 'h-full bg-yellow-600 transition-all duration-500';
+                display.className = 'text-2xl font-black text-yellow-600';
+                text.innerText = 'CAUTION: CNS depressed. Drop RPE by 1. Reduce total volume by 20%.';
+            } else {
+                bar.className = 'h-full bg-zinc-600 transition-all duration-500';
+                display.className = 'text-2xl font-black text-zinc-500';
+                text.innerText = 'COMPROMISED: Cancel loading. Execute Starrett mobility & Zone 1 flush only.';
+            }
+        }
+
+        const protocols = {
+            1: {
+                title: "PHASE 1: YIELDING ISO & ALACTIC BASE",
+                duration: "WEEKS 1 - 4",
+                focus: "Establish structural armor via yielding isometrics (Dietz) to thicken COL5A1 tendons. Build pure Alactic power with zero machines. BJJ is for skill acquisition.",
+                schedule: [
+                    { day: 'MON', label: 'Armor / Lower', title: 'Triphasic Isometrics', rpe: '8.0', color: 'border-zinc-700',
+                      content: `<strong>Trap Bar DL (Iso):</strong> 4x3. 3-second isometric pause just below knee. No spinal shear.<br><strong>Zercher Box Squat:</strong> 4x4. Dead stop on box, strict vertical tibia to protect meniscus.`
+                    },
+                    { day: 'TUE', label: 'Alactic Upper', title: 'Q&D + Contralateral', rpe: '8.0', color: 'border-crimson-500',
+                      content: `<strong>Pavel's Q&D:</strong> Power Pushups & Heavy KB Swings. 10 sets of 5. Strict 30s rest. 100% velocity.<br><strong>Contralateral Press:</strong> 3x5 L-Arm KB Press while driving right big toe into ground.`
+                    },
+                    { day: 'WED', label: 'BJJ Flow', title: 'Tactical Defense', rpe: '6.0', color: 'border-zinc-800',
+                      content: `Positional flow and escapes. Nasal breathing only to cap intensity and protect the CNS. Tap early.`
+                    },
+                    { day: 'THU', label: 'Dynamic Effort', title: 'Alactic Shock', rpe: '8.5', color: 'border-crimson-500',
+                      content: `<strong>A+A KB Snatches OR Steep Hill Sprints:</strong> 6-8 sets of 8-10 seconds MAX effort. 2-3 full mins rest.<br><strong>Heavy Med Ball Slams:</strong> 5x3. Maximum downward velocity.`
+                    },
+                    { day: 'FRI', label: 'Restoration', title: 'Tissue Triage', rpe: '3.0', color: 'border-zinc-800',
+                      content: `Tissue smash on pecs/lats. Barefoot walking. Total systemic rest to clear the 72-hour IL-6 inflammatory window.`
+                    },
+                    { day: 'SAT', label: 'BJJ Live', title: 'Autoregulated Rolls', rpe: '7.5', color: 'border-zinc-700',
+                      content: `Apply structural strength to the mats. High tactical focus. Clear adrenaline with Vagal Reset immediately post-training.`
+                    },
+                    { day: 'SUN', label: 'Base', title: 'Zone 2 Cardiac Output', rpe: '5.0', color: 'border-zinc-800',
+                      content: `30-45 mins Zone 2 Ruck or Swim. Build the aerobic engine to replenish the alactic pathway for the upcoming week.`
+                    }
+                ]
+            },
+            2: {
+                title: "PHASE 2: CONCENTRIC FORCE & CLUSTERS",
+                duration: "WEEKS 5 - 8",
+                focus: "Maximize fast-twitch ACTN3 recruitment using 1.1.1 clusters. Translate Phase 1 isometric tendon strength into concentric speed.",
+                schedule: [
+                    { day: 'MON', label: 'Absolute Force', title: 'Max Effort Lower', rpe: '8.5', color: 'border-zinc-700',
+                      content: `<strong>Trap Bar DL:</strong> 1.1.1 Clusters. (1 rep, 15s rest, 1 rep, 15s rest, 1 rep). 3-4 clusters. 3 mins rest between.` 
+                    },
+                    { day: 'TUE', label: 'Speed & Armor', title: 'Dynamic Upper', rpe: '7.5', color: 'border-crimson-500',
+                      content: `<strong>Speed Floor Press:</strong> 8x3 at 50% + Bands if available. Fast-twitch activation. Contralateral KB work.`
+                    },
+                    { day: 'WED', label: 'BJJ Flow', title: 'Skill & Defense', rpe: '6.0', color: 'border-zinc-800',
+                      content: `Positional flow. Nasal breathing. Protect the CNS.`
+                    },
+                    { day: 'THU', label: 'French Contrast', title: 'Dynamic Lower', rpe: '8.5', color: 'border-crimson-500',
+                      content: `<strong>French Contrast:</strong> Heavy Zercher Squat (1 rep) -> Broad Jump (2 reps) -> DB Jump (2 reps). 4 Rounds.`
+                    },
+                    { day: 'FRI', label: 'Restoration', title: 'Tissue Triage', rpe: '3.0', color: 'border-zinc-800', content: `Active recovery. Toe Yoga. Starrett mobilizations.` },
+                    { day: 'SAT', label: 'BJJ Live', title: 'Autoregulated Rolls', rpe: '7.5', color: 'border-zinc-700', content: `Live rolling. Clear adrenaline immediately post-training.` },
+                    { day: 'SUN', label: 'Base', title: 'Zone 2', rpe: '5.0', color: 'border-zinc-800', content: `Active flush. Cardiac Output.` }
+                ]
+            },
+            3: {
+                title: "PHASE 3: INTERIM SUSTENANCE",
+                duration: "WEEKS 9 - 12+",
+                focus: "Sustainable holding pattern. Drop heavy barbell volume to minimize CNS fatigue while keeping the alactic engine primed for BJJ.",
+                schedule: [
+                    { day: 'MON', label: 'Armor Carries', title: 'Maintenance', rpe: '7.0', color: 'border-zinc-700', content: `<strong>Heavy Suitcase Carries & Mace 360s.</strong> Yielding Isometrics for joint health (Split Squat holds).` },
+                    { day: 'TUE', label: 'Overspeed', title: 'Alactic Speed', rpe: '8.0', color: 'border-crimson-500', content: `<strong>Banded KB Swings or Snatches:</strong> 10s ON / 50s OFF for 10-15 minutes.` },
+                    { day: 'WED', label: 'BJJ Live', title: 'Hard Rounds', rpe: '8.0', color: 'border-zinc-700', content: `Shift Wednesday to higher intensity live rolls. Test the engine.` },
+                    { day: 'THU', label: 'Triage', title: 'Recovery', rpe: '4.0', color: 'border-zinc-800', content: `Active flush (light rowing or jogging). Starrett joint mobilizations.` },
+                    { day: 'FRI', label: 'CNS Priming', title: 'Activation', rpe: '6.0', color: 'border-crimson-500', content: `Light Med Ball Slams and Mace work. Prep the body for Saturday.` },
+                    { day: 'SAT', label: 'BJJ Live', title: 'Autoregulated Rolls', rpe: '7.5', color: 'border-zinc-700', content: `Live rolling. Focus on timing and tactical execution.` },
+                    { day: 'SUN', label: 'Base', title: 'Zone 2', rpe: '5.0', color: 'border-zinc-800', content: `Active flush. Complete physical and mental decompression.` }
+                ]
+            }
+        };
+
+        function setPhase(num) {
+            document.querySelectorAll('.ronin-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-p${num}`).classList.add('active');
+
+            const data = protocols[num];
+            document.getElementById('current-phase-label').innerText = data.title;
+            document.getElementById('phase-duration').innerText = data.duration;
+            document.getElementById('focus-text').innerText = data.focus;
+
+            let html = '';
+            data.schedule.forEach(day => {
+                const isRest = (day.day === 'WED' || day.day === 'FRI' || day.day === 'SUN');
+                const textStyle = isRest ? 'text-zinc-500' : 'text-zinc-200';
+                
+                html += `
+                <div class="flex flex-col md:flex-row bg-carbon border-l-2 ${day.color} rounded-r overflow-hidden hover:bg-zinc-900 transition-colors">
+                    <div class="md:w-32 p-3 flex flex-col justify-center border-b md:border-b-0 md:border-r border-zinc-800 bg-obsidian">
+                        <span class="font-black text-lg text-white">${day.day}</span>
+                        <span class="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">${day.label}</span>
+                    </div>
+                    <div class="p-3 flex-1 flex flex-col justify-center font-mono">
+                        <div class="flex justify-between items-start mb-1">
+                            <h4 class="font-bold uppercase text-sm ${textStyle}">${day.title}</h4>
+                            <span class="rpe-badge text-[10px] font-bold px-2 py-0.5 rounded">RPE ${day.rpe}</span>
+                        </div>
+                        <p class="text-xs text-zinc-400 leading-relaxed">${day.content}</p>
+                    </div>
+                </div>`;
+            });
+            document.getElementById('tactical-grid').innerHTML = html;
+        }
+
+        // Init
+        setPhase(1);
+        calculateReadiness();
+    </script>
+</body>
+</html>
