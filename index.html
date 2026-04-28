@@ -181,6 +181,40 @@
             <!-- Left Column: Controls & Meta -->
             <div class="lg:col-span-4 flex flex-col space-y-12">
                 
+                <!-- Readiness / Ki Engine -->
+                <div class="border border-white/10 bg-charcoal/40 p-6 relative group backdrop-blur-sm">
+                    <div class="absolute top-0 left-0 w-full h-[2px] bg-crimson transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                    <h3 class="font-serif text-rice text-xl mb-6 flex justify-between items-center">
+                        <span>KI <span class="text-crimson font-sans text-xs ml-2 tracking-[0.2em]">気 READINESS</span></span>
+                        <span id="readiness-score" class="text-3xl font-black text-crimson">100%</span>
+                    </h3>
+                    
+                    <div class="space-y-4 font-sans text-sm">
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-ash tracking-widest text-xs uppercase">CO2 (s)</span>
+                            <input type="number" id="in-co2" class="bg-transparent text-rice text-right w-16 focus:outline-none focus:text-crimson transition-colors" value="65" onchange="calculateReadiness()">
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-ash tracking-widest text-xs uppercase">Grip (kg)</span>
+                            <input type="number" id="in-grip" class="bg-transparent text-rice text-right w-16 focus:outline-none focus:text-crimson transition-colors" value="64" onchange="calculateReadiness()">
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-ash tracking-widest text-xs uppercase">RHR (bpm)</span>
+                            <input type="number" id="in-rhr" class="bg-transparent text-rice text-right w-16 focus:outline-none focus:text-crimson transition-colors" value="48" onchange="calculateReadiness()">
+                        </div>
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-ash tracking-widest text-xs uppercase">Soreness (1-10)</span>
+                            <input type="number" id="in-sore" class="bg-transparent text-rice text-right w-16 focus:outline-none focus:text-crimson transition-colors" value="2" min="1" max="10" onchange="calculateReadiness()">
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 pt-4 border-t border-crimson/20">
+                        <p id="readiness-text" class="font-sans text-xs text-rice leading-relaxed tracking-wide">
+                            <span class="text-crimson font-bold">OPTIMAL:</span> Proceed with protocol. Maintain RPE limits.
+                        </p>
+                    </div>
+                </div>
+
                 <!-- Block Selector -->
                 <div>
                     <span class="block font-sans text-xs text-crimson tracking-widest uppercase mb-2">Current Phase</span>
@@ -541,8 +575,51 @@
             }
         }
 
+        function calculateReadiness() {
+            const co2 = parseFloat(document.getElementById('in-co2').value) || 0;
+            const grip = parseFloat(document.getElementById('in-grip').value) || 0;
+            const rhr = parseFloat(document.getElementById('in-rhr').value) || 0;
+            const sore = parseFloat(document.getElementById('in-sore').value) || 0;
+
+            const baseCO2 = 65;
+            const baseGrip = 64;
+            const baseRHR = 48;
+
+            let co2Score = (co2 / baseCO2) * 100;
+            let gripScore = (grip / baseGrip) * 100;
+            let rhrScore = rhr > 0 ? (baseRHR / rhr) * 100 : 0; 
+            let soreScore = 100 - ((sore - 2) * 12.5); // 1-2 is optimal, drops sharply higher up
+
+            co2Score = Math.min(co2Score, 100);
+            gripScore = Math.min(gripScore, 100);
+            rhrScore = Math.min(rhrScore, 100);
+            soreScore = Math.min(Math.max(soreScore, 0), 100);
+
+            let readiness = Math.round((co2Score + gripScore + rhrScore + soreScore) / 4);
+            
+            if(readiness < 0) readiness = 0;
+            if(readiness > 100) readiness = 100;
+
+            const display = document.getElementById('readiness-score');
+            const text = document.getElementById('readiness-text');
+
+            display.innerText = readiness + '%';
+
+            if(readiness >= 90) {
+                display.className = 'text-3xl font-black text-crimson';
+                text.innerHTML = '<span class="text-crimson font-bold">OPTIMAL:</span> Proceed with protocol. Maintain RPE limits.';
+            } else if (readiness >= 75) {
+                display.className = 'text-3xl font-black text-orange-500';
+                text.innerHTML = '<span class="text-orange-500 font-bold">CAUTION:</span> CNS depression. Drop RPE by 1. Focus on form.';
+            } else {
+                display.className = 'text-3xl font-black text-ash';
+                text.innerHTML = '<span class="text-ash font-bold">DEPLETED:</span> Abort heavy loading. Active recovery only.';
+            }
+        }
+
         // Initialize
         renderWorkout();
+        calculateReadiness();
     </script>
 </body>
 </html>
